@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>⛽ OILLY 주유 계산기</title>
+    <style>
+        :root { 
+            --primary-color: #2563eb; 
+            --bg-color: #f8fafc; 
+            --card-bg: #ffffff; 
+            --text-color: #1e293b; 
+            --border-color: #e2e8f0; 
+            --ui-scale: 1; 
+            --control-bg: #f1f5f9;
+            --control-hover: #e2e8f0;
+            --people-bg: #fafafa;
+            --total-bg: #f1f5f9;
+            --product-price-color: #64748b;
+        }
+
+        [data-theme="dark"] {
+            --primary-color: #3b82f6;
+            --bg-color: #0f172a;
+            --card-bg: #1e293b;
+            --text-color: #f8fafc;
+            --border-color: #334155;
+            --control-bg: #334155;
+            --control-hover: #475569;
+            --people-bg: #1a2332;
+            --total-bg: #111827;
+            --product-price-color: #94a3b8;
+        }
+
+        body { 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            background-color: var(--bg-color); 
+            color: var(--text-color); 
+            margin: 0; 
+            padding: 40px 20px; 
+            display: flex; 
+            justify-content: center; 
+            align-items: flex-start;
+            min-height: 100vh;
+            transition: background-color 0.2s, color 0.2s;
+        }
+        
+        .wrapper {
+            display: flex;
+            justify-content: center;
+            width: 100%;
+        }
+
+        .container { 
+            width: 100%; 
+            max-width: 600px; 
+            background: var(--card-bg); 
+            padding: 30px; 
+            border-radius: 16px; 
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1); 
+            position: relative;
+            transform: scale(var(--ui-scale));
+            transform-origin: top center; 
+            transition: transform 0.1s ease, background-color 0.2s, box-shadow 0.2s;
+        }
+        
+        /* 상단 메뉴바 스타일 */
+        .top-menu {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+        .menu-btn {
+            background-color: var(--control-bg);
+            color: var(--text-color);
+            padding: 8px 14px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-size: 13px;
+            font-weight: 600;
+            border: 1px solid var(--border-color);
+            transition: background-color 0.2s, color 0.2s;
+        }
+        .menu-btn:hover {
+            background-color: var(--primary-color);
+            color: #ffffff;
+            border-color: var(--primary-color);
+        }
+
+        .scale-controls {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            display: flex;
+            gap: 4px;
+            background: var(--control-bg);
+            padding: 4px;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+            z-index: 10;
+        }
+        .scale-btn {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            width: 28px;
+            height: 28px;
+            font-size: 12px;
+            font-weight: 700;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-color);
+            transition: background 0.2s;
+        }
+        .scale-btn:hover {
+            background: var(--control-hover);
+        }
+
+        h2 { 
+            margin-top: 0; 
+            margin-bottom: 24px; 
+            text-align: center; 
+        }
+        .product-list { 
+            display: flex; 
+            flex-direction: column; 
+            gap: 16px; 
+            margin-bottom: 20px; 
+        }
+        .product-item { 
+            display: flex; 
+            align-items: center; 
+            justify-content: space-between; 
+            padding: 16px; 
+            border: 1px solid var(--border-color); 
+            border-radius: 12px; 
+        }
+        .product-info { 
+            display: flex; 
+            align-items: center; 
+            gap: 12px; 
+            flex: 1; 
+        }
+        .product-info input[type="checkbox"] { 
+            width: 20px; 
+            height: 20px; 
+            cursor: pointer; 
+        }
+        .product-details { 
+            display: flex; 
+            flex-direction: column; 
+            gap: 4px;
+        }
+        .product-name { 
+            font-weight: 600; 
+        }
+        .product-price { 
+            font-size: 14px; 
+            color: var(--product-price-color); 
+        }
+        
+        .price-input-inline {
+            width: 120px;
+            padding: 4px 6px;
+            font-size: 14px;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            text-align: left;
+            background: var(--card-bg);
+            color: var(--text-color);
+        }
+
+        .quantity-control { 
+            display: flex; 
+            align-items: center; 
+            gap: 8px; 
+        }
+        .quantity-control input[type="number"] { 
+            width: 90px; 
+            padding: 6px; 
+            text-align: center; 
+            border: 1px solid var(--border-color); 
+            border-radius: 6px; 
+            background: var(--card-bg);
+            color: var(--text-color);
+        }
+        
+        .people-section { 
+            display: flex; 
+            align-items: center; 
+            justify-content: space-between; 
+            padding: 16px; 
+            border: 1px solid var(--border-color); 
+            border-radius: 12px; 
+            margin-bottom: 20px; 
+            background-color: var(--people-bg); 
+        }
+        .people-section label { 
+            font-weight: 600; 
+        }
+        .people-section input[type="number"] { 
+            width: 80px; 
+            padding: 6px; 
+            text-align: center; 
+            border: 1px solid var(--border-color); 
+            border-radius: 6px; 
+            background: var(--card-bg);
+            color: var(--text-color);
+        }
+
+        .total-section { 
+            background-color: var(--total-bg); 
+            padding: 20px; 
+            border-radius: 12px; 
+            text-align: center; 
+        }
+        .total-label { 
+            font-size: 18px; 
+            font-weight: 600; 
+            display: block; 
+            margin-bottom: 10px; 
+        }
+        .total-amount { 
+            font-size: 20px; 
+            font-weight: 700; 
+            color: var(--primary-color); 
+            word-break: keep-all; 
+        }
+    </style>
+</head>
+<body>
+
+<div class="wrapper">
+    <div class="container" id="mainContainer">
+        <!-- 우측 상단 UI 크기 조절 및 다크모드 버튼 -->
+        <div class="scale-controls">
+            <button class="scale-btn" onclick="changeScale(-0.1)" title="축소">-</button>
+            <button class="scale-btn" onclick="resetScale()" title="기본 크기">↻</button>
+            <button class="scale-btn" onclick="changeScale(0.1)" title="확대">+</button>
+            <button class="scale-btn" onclick="toggleTheme()" title="테마 변경" id="themeBtn">🌙</button>
+        </div>
+
+        <!-- 상단 메뉴 버튼 그룹 -->
+        <div class="top-menu">
+            <a href="https://yuna-333.github.io/Signal-Color-Text/" target="_blank" class="menu-btn">🎨 시그널 컬러 텍스트</a>
+            <a href="https://discord.gg/sig-rp" target="_blank" class="menu-btn">🎮 시그널RP Discord</a>
+        </div>
+
+        <h2>⛽ OILLY 주유 계산기</h2>
+        
+        <div class="product-list">
+            <div class="product-item">
+                <div class="product-info">
+                    <input type="checkbox" id="item1" class="product-check" onchange="calculateTotal()" data-price="5000000">
+                    <div class="product-details">
+                        <span class="product-name">엔진 코팅제</span>
+                        <span class="product-price">5,000,000원</span>
+                    </div>
+                </div>
+                <div class="quantity-control"><label>수량:</label><input type="number" id="qty1" value="1" min="1" oninput="calculateTotal()"></div>
+            </div>
+
+            <div class="product-item">
+                <div class="product-info">
+                    <input type="checkbox" id="item2" class="product-check" onchange="calculateTotal()" data-price="5000000">
+                    <div class="product-details">
+                        <span class="product-name">차량 세차</span>
+                        <span class="product-price">5,000,000원</span>
+                    </div>
+                </div>
+                <div class="quantity-control"><label>수량:</label><input type="number" id="qty2" value="1" min="1" oninput="calculateTotal()"></div>
+            </div>
+
+            <div class="product-item">
+                <div class="product-info">
+                    <input type="checkbox" id="item3" class="product-check" onchange="calculateTotal()" data-price="5000000">
+                    <div class="product-details">
+                        <span class="product-name">차량 광택</span>
+                        <span class="product-price">5,000,000원</span>
+                    </div>
+                </div>
+                <div class="quantity-control"><label>수량:</label><input type="number" id="qty3" value="1" min="1" oninput="calculateTotal()"></div>
+            </div>
+
+            <div class="product-item">
+                <div class="product-info">
+                    <input type="checkbox" id="item4" class="product-check" onchange="calculateTotal()" checked>
+                    <div class="product-details">
+                        <span class="product-name">주유 (1L)</span>
+                        <input type="number" id="pricePerLiter" class="price-input-inline" value="300000" min="0" step="10000" oninput="calculateTotal()" placeholder="1L 가격">
+                    </div>
+                </div>
+                <div class="quantity-control">
+                    <label>수량:</label>
+                    <input type="number" id="qty4" value="1" min="1" oninput="calculateTotal()">
+                </div>
+            </div>
+
+            <div class="product-item">
+                <div class="product-info">
+                    <input type="checkbox" id="item5" class="product-check" onchange="calculateTotal()" data-price="8500000">
+                    <div class="product-details">
+                        <span class="product-name">기름통 (25L)</span>
+                        <span class="product-price" id="canPriceText">8,500,000원</span>
+                    </div>
+                </div>
+                <div class="quantity-control"><label>수량:</label><input type="number" id="qty5" value="1" min="1" oninput="calculateTotal()"></div>
+            </div>
+
+            <div class="product-item">
+                <div class="product-info">
+                    <input type="checkbox" id="item6" class="product-check" onchange="calculateTotal()" data-price="76000000">
+                    <div class="product-details">
+                        <span class="product-name">헬기 기름통 (50L)</span>
+                        <span class="product-price">76,000,000원</span>
+                    </div>
+                </div>
+                <div class="quantity-control"><label>수량:</label><input type="number" id="qty6" value="1" min="1" oninput="calculateTotal()"></div>
+            </div>
+        </div>
+
+        <div class="people-section">
+            <label for="peopleCount">청구 인원 수:</label>
+            <div class="quantity-control">
+                <input type="number" id="peopleCount" value="1" min="1" oninput="calculateTotal()">
+                <span>명</span>
+            </div>
+        </div>
+
+        <div class="total-section">
+            <span class="total-label">최종 합계 금액 (인원 곱 적용)</span>
+            <span class="total-amount" id="totalPrice">0원</span>
+        </div>
+    </div>
+</div>
+
+<script>
+    let currentScale = 1.0;
+
+    function changeScale(amount) {
+        currentScale += amount;
+        if (currentScale < 0.5) currentScale = 0.5;
+        if (currentScale > 1.5) currentScale = 1.5;
+        document.documentElement.style.setProperty('--ui-scale', currentScale);
+    }
+
+    function resetScale() {
+        currentScale = 1.0;
+        document.documentElement.style.setProperty('--ui-scale', currentScale);
+    }
+
+    function toggleTheme() {
+        const html = document.documentElement;
+        const themeBtn = document.getElementById('themeBtn');
+        if (html.getAttribute('data-theme') === 'dark') {
+            html.removeAttribute('data-theme');
+            themeBtn.textContent = '🌙';
+        } else {
+            html.setAttribute('data-theme', 'dark');
+            themeBtn.textContent = '☀️';
+        }
+    }
+
+    function numberToKorean(num) {
+        if (num === 0) return "0원";
+        const units = ["", "만", "억", "조"];
+        const sUnits = ["", "십", "백", "천"];
+        let result = "";
+        let unitIdx = 0;
+
+        while (num > 0) {
+            let part = num % 10000;
+            if (part > 0) {
+                let partStr = "";
+                for (let i = 0; i < 4; i++) {
+                    let digit = part % 10;
+                    if (digit > 0) {
+                        partStr = (digit === 1 && i > 0 ? "" : digit) + sUnits[i] + partStr;
+                    }
+                    part = Math.floor(part / 10);
+                }
+                result = partStr + units[unitIdx] + result;
+            }
+            num = Math.floor(num / 10000);
+            unitIdx++;
+        }
+        return result + "원";
+    }
+
+    function calculateTotal() {
+        let total = 0;
+
+        let pricePerLiter = parseInt(document.getElementById('pricePerLiter').value) || 0;
+        if (pricePerLiter < 0) pricePerLiter = 0;
+
+        const item4Checkbox = document.getElementById('item4');
+        const qty4Input = document.getElementById('qty4');
+        if (item4Checkbox.checked) {
+            let qty4 = parseInt(qty4Input.value) || 0;
+            if (qty4 < 0) qty4 = 0;
+            total += pricePerLiter * qty4;
+        }
+
+        let calculatedCanPrice = (pricePerLiter * 25) + 1000000;
+        const item5Checkbox = document.getElementById('item5');
+        const qty5Input = document.getElementById('qty5');
+        
+        document.getElementById('canPriceText').textContent = calculatedCanPrice.toLocaleString() + '원';
+
+        if (item5Checkbox.checked) {
+            let qty5 = parseInt(qty5Input.value) || 0;
+            if (qty5 < 0) qty5 = 0;
+            total += calculatedCanPrice * qty5;
+        }
+
+        const fixedItems = [
+            { check: 'item1', qty: 'qty1' },
+            { check: 'item2', qty: 'qty2' },
+            { check: 'item3', qty: 'qty3' },
+            { check: 'item6', qty: 'qty6' }
+        ];
+
+        fixedItems.forEach((item) => {
+            const checkbox = document.getElementById(item.check);
+            const qtyInput = document.getElementById(item.qty);
+            
+            if (checkbox.checked) {
+                const price = parseInt(checkbox.getAttribute('data-price')) || 0;
+                let quantity = parseInt(qtyInput.value) || 0;
+                if (quantity < 0) quantity = 0;
+                total += price * quantity;
+            }
+        });
+        
+        let peopleInput = document.getElementById('peopleCount');
+        let people = parseInt(peopleInput.value) || 1;
+        if (people < 1) people = 1;
+
+        let finalTotal = total * people;
+
+        document.getElementById('totalPrice').textContent = finalTotal.toLocaleString() + '원 (' + numberToKorean(finalTotal) + ')';
+    }
+
+    window.onload = function() {
+        calculateTotal();
+    };
+</script>
+
+</body>
+</html>
